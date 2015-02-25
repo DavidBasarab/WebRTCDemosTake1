@@ -1,0 +1,223 @@
+﻿@{
+    ViewBag.Title = "Caller";
+}
+
+<h2>Room</h2>
+
+<div id="signalrid"></div>
+<div>
+    @*<input id="room" />*@
+    <button id="join">Join</button>
+</div>
+<div id="videos"></div>
+@*<div>
+    <div id="chat">
+        <div id="log"></div>
+        <input id="msg" />
+        <button id="send">Send</button>
+    </div>
+</div>*@
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+    var videohtml = '<video autoplay controls height="200" width"200" />';
+
+    var PeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+    var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+    var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+
+    navigator.getUserMedia = (navigator.getUserMedia ||
+               navigator.webkitGetUserMedia ||
+               navigator.mozGetUserMedia ||
+               navigator.msGetUserMedia);
+
+    var constraints = {
+        "offerToReceiveAudio": true,
+        "offerToReceiveVideo": true
+    };
+
+    //Define new PeerConnection
+    //var peerConnection = new PeerConnection(
+    //    { iceServers: [] },
+    //    { optional: [{ RtpDataChannels: true }] });
+
+    //var dataChannel = peerConnection.createDataChannel("sendDataChannel", { reliable: false });
+    //dataChannel.onmessage = function (event) {
+    //    console.log("Got Data Channel Message:", event.data);
+    //    $('#log').prepend(event.data);
+    //};
+
+    $(function () {
+
+        var localMediaStream;
+
+        //$('#send').click(function () {
+        //    var msg = $('#msg').val();
+        //    $('#log').prepend(msg);
+        //    dataChannel.send(msg);
+        //});
+
+        if (navigator.getUserMedia) {
+            navigator.getUserMedia(
+                { audio: true, video: true },
+                function (stream) {
+                    localMediaStream = stream;
+
+                    var video = $(videohtml);
+                    video.attr('src', window.URL.createObjectURL(localMediaStream));
+                    video.get(0).play();
+
+                    $("div#videos").append(video);
+                },
+                function (err) { console.log(err); });
+        }
+
+        var roomHubProxy = $.connection.roomHub;
+        $.connection.hub.logging = true;
+
+        $('#join').click(function () {
+            $.connection.hub.start().done(function () {
+                $('#signalrid').html('Now connected, connection ID=' + $.connection.hub.id);
+            });
+
+        });
+
+        var callerPeerConnections = {};
+        var calleePeerConnections = {};
+
+
+        /******** START CALLER *********************/
+
+        //A new peer has connected so try to establish peering with them
+        roomHubProxy.client.onPeerConnected = function (calleeServerConnectionId) {
+
+            var peerConnection = new PeerConnection(null);
+            //var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) });
+
+            peerConnection.addStream(localMediaStream);
+
+            peerConnection.onicecandidate = function (event) {
+                if (event.candidate) {
+                    console.log('ICE Candidate Found.  Sending to ' + calleeServerConnectionId);
+                    roomHubProxy.server.candidateFound(calleeServerConnectionId, JSON.stringify(event.candidate));
+                }
+            };
+
+            peerConnection.createOffer(function (offer) {
+
+                peerConnection.setLocalDescription(
+                    offer,
+                    function () { console.log(offer); },
+                    function (err) { console.log(err); });
+
+                roomHubProxy.server.makeOffer(calleeServerConnectionId, JSON.stringify(offer));
+            },
+            function (err) { console.log(err); },
+            constraints);
+
+            console.log(calleeServerConnectionId);
+            callerPeerConnections[calleeServerConnectionId] = peerConnection;
+        };
+
+        //roomHubProxy.client.onPeerDisconnected = function (calleeServerConnectionId) {
+        //    delete callerPeerConnections[calleeServerConnectionId];
+        //    $('video#' + calleeServerConnectionId).remove();
+        //};
+
+        roomHubProxy.client.onAnswer = function (calleeServerConnectionId, answer) {
+
+            callerPeerConnections[calleeServerConnectionId].onaddstream = function (event) {
+                var video = $(videohtml);
+                video.attr('id', calleeServerConnectionId);
+                video.attr('src', window.URL.createObjectURL(event.stream));
+                video.get(0).play();
+                $("div#videos").append(video);
+            };
+
+            var rtcAnswer = new SessionDescription(JSON.parse(answer));
+            callerPeerConnections[calleeServerConnectionId].setRemoteDescription(
+                rtcAnswer,
+                function () { console.log(rtcAnswer); },
+                function (err) { console.log(err); }
+            );
+
+        };
+
+        /******** END CALLER *********************/
+
+        /******** START CALLEE *********************/
+
+        //Listen for offer, set remote description
+        roomHubProxy.client.onOffer = function (callerServerConnectionId, offer) {
+
+            console.info("Offer from " + callerServerConnectionId);
+
+             var peerConnection = new PeerConnection(null);
+            //var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) });
+
+            peerConnection.addStream(localMediaStream);
+
+            //Listen for the remote stream and set to video element
+            peerConnection.onaddstream = function (event) {
+                var video = $(videohtml);
+                video.attr('src', window.URL.createObjectURL(event.stream));
+                video.get(0).play();
+                $("div#videos").append(video);
+            };
+
+            remoteDescription = new SessionDescription(JSON.parse(offer));
+            peerConnection.setRemoteDescription(
+                remoteDescription,
+                function () { 
+                    
+                    //Create answer, set as local description and send to offerer
+                    peerConnection.createAnswer(function (answer) {
+
+                        console.info("Created answer for " + callerServerConnectionId);
+                        
+                        peerConnection.setLocalDescription(
+                            answer,
+                            function () { console.log(answer); },
+                            function (err) {
+                                console.error(callerServerConnectionId);
+                                console.error(err);
+                            });
+
+                        roomHubProxy.server.sendAnswer(callerServerConnectionId, JSON.stringify(answer));
+                    },
+                    function (err) { console.log(err); },
+                    constraints);
+
+                },
+                function (err) { console.log(err); });
+
+            calleePeerConnections[callerServerConnectionId] = peerConnection;
+        };
+
+        //Listen for new ICE candidates and add to the PeerConnection
+        roomHubProxy.client.onCandidate = function (callerServerConnectionId, candidate) {
+            
+            console.log('ICE Candidate received from: ' + callerServerConnectionId);
+
+            console.log('Peer Connection: ' + calleePeerConnections[callerServerConnectionId]);
+
+            rtcCandidate = new IceCandidate(JSON.parse(candidate));
+
+//            console.log('Candidate: ' + rtcCandidate);
+
+            calleePeerConnections[callerServerConnectionId].addIceCandidate(
+                rtcCandidate,
+                function () {
+                    console.log(rtcCandidate);
+                },
+                function (err) {
+                    console.error(callerServerConnectionId, err);
+                });
+        };
+
+        //$.connection.hub.start();
+    });
+</script>
+}

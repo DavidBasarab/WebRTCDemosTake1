@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>    
+
+    <div>
+        <audio id="local-audio" autoplay controls></audio>
+    </div>
+    <div>
+        <canvas id="meter" width="300" height="50"></canvas>
+    </div>
+
+    <!-- Step 1: Add volume-meter tag -->
+
+    <script src="volume-meter.js"></script>
+    <script type="text/javascript" language="javascript">
+    navigator.getUserMedia = (navigator.getUserMedia ||
+                   navigator.webkitGetUserMedia ||
+                   navigator.mozGetUserMedia ||
+                   navigator.msGetUserMedia);
+
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
+        //Step 1: Create an AudioContext, our generic audio-processing graph
+        //Step 2: Get canvas context
+        //Step 2: Create a new MediaStreamSource
+        //Step 3: Create a new AudioMeter
+        //Step 4: Connect the meter to the mediastreamsource
+        //Step 5: start drawLoop
+
+    if (navigator.getUserMedia) {
+
+        navigator.getUserMedia(
+            { audio: true },
+            function (stream) {
+                var localAudio = document.querySelector("audio#local-audio");
+                localAudio.src = window.URL.createObjectURL(stream);
+
+                //Add audio meter
+
+            },
+            function (err) {
+                console.log(err);
+            });
+    }
+
+    function drawLoop(time) {
+
+        canvasContext.clearRect(0, 0, 300, 50);
+
+        // check if we're currently clipping
+        if (meter.checkClipping())
+            canvasContext.fillStyle = "red";
+        else
+            canvasContext.fillStyle = "green";
+
+        var w = meter.volume * 300 * 1.4;
+        canvasContext.fillRect(0, 0, w, 50);
+
+        // set up the next visual callback
+        rafID = window.requestAnimationFrame(drawLoop);
+    }
+
+    </script>
+
+
+</body>
+</html>
