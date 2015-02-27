@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -14,12 +15,30 @@ namespace WebRTCDemosTake1.Controllers
         // GET: Room
         public ActionResult Index()
         {
+            var serializer = new JsonSerializer()
+            {
+                Formatting = Formatting.None,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                NullValueHandling = NullValueHandling.Ignore                
+            };
 
-            string json =  JsonConvert.SerializeObject(
-                GetIceServers().IceServers,
-                Formatting.None,
-                new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }
-            );
+            var stringwriter = new StringWriter();
+            using (var writer = new JsonTextWriter(stringwriter))
+            {
+                writer.QuoteName = false;
+                serializer.Serialize(writer, GetIceServers().IceServers);
+            }
+
+            var json = stringwriter.ToString();
+
+
+
+
+            //string json =  JsonConvert.SerializeObject(
+            //    GetIceServers().IceServers,
+            //    Formatting.None,
+            //    new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver(), NullValueHandling = NullValueHandling.Ignore }
+            //);
             
             ViewBag.IceServers = json;
             return View();
