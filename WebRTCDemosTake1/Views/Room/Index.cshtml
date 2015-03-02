@@ -104,6 +104,8 @@
             callerPeerConnections[calleeServerConnectionId].addStream(localMediaStream);
 
             //Caller found and ICE candidate and wants to tell the Callee
+            // Should I wait to start doing this until after the RemoteDescription is set?
+            // http://stackoverflow.com/questions/13396071/errors-when-ice-candidates-are-received-before-answer-is-sent
             callerPeerConnections[calleeServerConnectionId].onicecandidate = function (event) {
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + calleeServerConnectionId);
@@ -181,6 +183,8 @@
             calleePeerConnections[callerServerConnectionId] = peerConnection;
             calleePeerConnections[callerServerConnectionId].addStream(localMediaStream);
 
+            // Should I wait to start doing this until after the RemoteDescription is set?
+            // http://stackoverflow.com/questions/13396071/errors-when-ice-candidates-are-received-before-answer-is-sent
             calleePeerConnections[callerServerConnectionId].onicecandidate = function (event) {
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + callerServerConnectionId);
