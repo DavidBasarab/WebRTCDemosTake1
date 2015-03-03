@@ -37,10 +37,12 @@
                     function (stream) {
 
                         // Step 2: Add Stream to Peer Connection
+
                         // Step 5: Relay ICE candidates to the Callee
+
                         // Step 3: Create Offer, set Local Description, broadcast offer to Peers
 
-                    });
+                    }, function (err) { console.log(err); });
             }
 
             $.connection.hub.start();

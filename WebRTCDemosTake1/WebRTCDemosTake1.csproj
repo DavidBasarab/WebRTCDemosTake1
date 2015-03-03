@@ -149,8 +149,8 @@
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="packages.config" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
-    <Content Include="Views\Home\Caller.cshtml" />
-    <Content Include="Views\Home\Callee.cshtml" />
+    <Content Include="Views\Home\Bob.cshtml" />
+    <Content Include="Views\Home\Alice.cshtml" />
     <Content Include="Views\Room\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
