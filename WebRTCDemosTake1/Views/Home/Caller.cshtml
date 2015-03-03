@@ -9,14 +9,6 @@
     <video id="local-video" autoplay></video>
     <video id="remote-video" autoplay></video>
 </div>
-<div><button id="call">Call</button></div>
-<div>
-    <div id="chat">
-        <div id="log"></div>
-        <input id="msg" />
-        <button id="send">Send</button>
-    </div>
-</div>
 
 @section Scripts {
 
@@ -31,90 +23,28 @@
                    navigator.mozGetUserMedia ||
                    navigator.msGetUserMedia);
 
-        //Define new PeerConnection
-        //var peerConnection = new PeerConnection(null);
-        peerConnection = new PeerConnection(
-            { iceServers: [] },
-            { optional: [{ RtpDataChannels: true }] });
-
-        var dataChannel = peerConnection.createDataChannel("sendDataChannel", { reliable: false });
-        dataChannel.onmessage = function (event) {
-            console.log("Got Data Channel Message:", event.data);
-            $('#log').prepend(event.data);
-        };
+        //Step 1: Define new PeerConnection
 
         $(function () {
 
-            $('#send').click(function () {
-                var msg = $('#msg').val();
-                $('#log').prepend(msg);
-                dataChannel.send(msg);
-            });
-
-            $('#call').click(function () {
-                if (navigator.getUserMedia) {
-                    navigator.getUserMedia({ audio: true, video: true },
-                    function (stream) {
-
-                        //Add MediaStream to PeerConnection
-                        peerConnection.addStream(stream);
-
-                        //Create a new SDP Offer, set as Local Description and broadcast to available peers
-                        peerConnection.createOffer(function (offer) {
-                            peerConnection.setLocalDescription(offer);
-                            videoHubProxy.server.makeOffer(JSON.stringify(offer));
-                        },
-                        function (err) { console.log(err); });
-
-                    },
-                    function (err) {
-                        console.log(err)
-                    });
-                }
-            });
-
             videoHubProxy = $.connection.videoHub;
 
-            // Add onAnswer 
-            videoHubProxy.client.onAnswer = function (answer) {
-                var rtcAnswer = new SessionDescription(JSON.parse(answer));
-                peerConnection.setRemoteDescription(rtcAnswer);
-            };
+            // Step 4: Listen for the Answer and set as remote description
+
+            if (navigator.getUserMedia) {
+                navigator.getUserMedia(
+                    { audio: true, video: true },
+                    function (stream) {
+
+                        // Step 2: Add Stream to Peer Connection
+                        // Step 5: Relay ICE candidates to the Callee
+                        // Step 3: Create Offer, set Local Description, broadcast offer to Peers
+
+                    });
+            }
 
             $.connection.hub.start();
 
-            //Identify ICE Candidates and broadcast to peers
-            peerConnection.onicecandidate = function (event) {
-                if (event.candidate) {
-                    videoHubProxy.server.candidateFound(JSON.stringify(event.candidate));
-                }
-            };
-
-            //dataChannel.onerror = function (error) {
-            //    console.log("Data Channel Error:", error);
-            //};
-
-            //dataChannel.onopen = function () {
-            //    console.log("The Data Channel is Open");
-            //};
-
-            //dataChannel.onclose = function (event) {
-            //    console.log("The Data Channel is Closed");
-            //};
-
-            //if (navigator.getUserMedia) {
-            //    navigator.getUserMedia(
-            //        { audio: true, video: true },
-            //        function (stream) {
-
-            //            // Add Stream to Peer Connection
-
-            //            // Create Offer, set Local Description, broadcast offer to Peers
-
-            //            // Identify IceCandidates and broadcast to peers
-            //        },
-            //        function (err) { console.log(err); });
-            //}
         });
     </script>
 }

@@ -1,0 +1,49 @@
+        peerConnection = new PeerConnection(
+            { iceServers: [] },
+            { optional: [{ RtpDataChannels: true }] });
+
+        var dataChannel = peerConnection.createDataChannel("sendDataChannel", { reliable: false });
+        dataChannel.onmessage = function (event) {
+            console.log("Got Data Channel Message:", event.data);
+            $('#log').prepend(event.data);
+        };
+
+
+
+            $('#send').click(function () {
+                var msg = $('#msg').val();
+                $('#log').prepend(msg);
+                dataChannel.send(msg);
+            });
+
+
+                        peerConnection.ondatachannel = function (event) {
+
+                dataChannel = event.channel;
+
+            //    dataChannel.onerror = function (error) {
+            //        console.log("Data Channel Error:", error);
+            //    };
+
+                dataChannel.onmessage = function (event) {
+                    console.log("Got Data Channel Message:", event.data);
+                    $('#log').prepend(event.data);
+                };
+
+            //    dataChannel.onopen = function () {
+            //        console.log("The Data Channel is Open");
+            //    };
+
+            //    dataChannel.onclose = function () {
+            //        console.log("The Data Channel is Closed");
+            //    };
+
+
+            <div>
+    <div id="chat">
+        <div id="log"></div>
+        <input id="msg" />
+        <button id="send">Send</button>
+    </div>
+</div>
+

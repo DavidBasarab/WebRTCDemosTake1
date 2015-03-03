@@ -1,0 +1,38 @@
+        //Create a new PeerConnection
+        var peerConnection = new PeerConnection(null);
+
+        //Listen for the remote stream and set to video element
+        peerConnection.onaddstream = function (event) {
+            var remoteVideo = document.querySelector("video#remote-video");
+            remoteVideo.src = window.URL.createObjectURL(event.stream);
+            remoteVideo.play();
+        };
+
+        $(function () {
+
+            videoHubProxy = $.connection.videoHub;
+
+            //Listen for new ICE candidates and add to the PeerConnection
+            videoHubProxy.client.onCandidate = function (candidate) {
+                var iceCandidate = new IceCandidate(JSON.parse(candidate));
+                peerConnection.addIceCandidate(iceCandidate);
+            };
+
+            //Listen for offer, set remote description
+            videoHubProxy.client.onOffer = function(offer) {
+            
+                var remoteDescription = new SessionDescription(JSON.parse(offer));
+                peerConnection.setRemoteDescription(remoteDescription, 
+                    function () {
+                        //Create answer, set as local description and send to offerer
+                        peerConnection.createAnswer(function (answer) {
+                            peerConnection.setLocalDescription(answer);
+
+                            videoHubProxy.server.sendAnswer(JSON.stringify(answer));
+                        }, function (err) { console.log(err); });
+                    });
+            };
+
+            $.connection.hub.start();
+
+        });

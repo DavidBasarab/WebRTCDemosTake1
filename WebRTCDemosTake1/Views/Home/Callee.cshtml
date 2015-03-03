@@ -9,14 +9,6 @@
     <video id="local-video" autoplay></video>
     <video id="remote-video" autoplay></video>
 </div>
-<div><button id="call">Call</button></div>
-<div>
-    <div id="chat">
-        <div id="log"></div>
-        <input id="msg" />
-        <button id="send">Send</button>
-    </div>
-</div>
 
 @section Scripts {
 
@@ -31,83 +23,23 @@
                    navigator.mozGetUserMedia ||
                    navigator.msGetUserMedia);
 
-        //Create a new PeerConnection
-        //var peerConnection = new PeerConnection(null);
-        peerConnection = new PeerConnection(
-            { iceServers: [] },
-            { optional: [{ RtpDataChannels: true }] });
+        //Step 1: Create a new PeerConnection
 
-        var dataChannel;
+
+        //Step 5: Listen for the remote stream and set to video element
 
         $(function () {
 
-            $('#send').click(function () {
-                var msg = $('#msg').val();
-                $('#log').prepend(msg);
-                dataChannel.send(msg);
-            });
-
             videoHubProxy = $.connection.videoHub;
 
-            //Listen for offer, set remote description
-            videoHubProxy.client.onOffer = function (offer) {
-                remoteDescription = new SessionDescription(JSON.parse(offer));
-                peerConnection.setRemoteDescription(remoteDescription);
-
-                //Create answer, set as local description and send to offerer
-                peerConnection.createAnswer(function (answer) {
-                    peerConnection.setLocalDescription(answer);
-                    videoHubProxy.server.sendAnswer(JSON.stringify(answer));
-                },
-                function (err) { console.log(err); });
-
-            };
-
-            //Listen for new ICE candidates and add to the PeerConnection
-            videoHubProxy.client.onCandidate = function (candidate) {
-                rtcCandidate = new IceCandidate(JSON.parse(candidate));
-                peerConnection.addIceCandidate(rtcCandidate);
-            };
+            //Step 4: Listen for new ICE candidates and add to the PeerConnection
+            //Step 2: Listen for offer and setRemoteDescription
+            //Step 3: Create answer, setLocalDescription and send to offerer
 
             $.connection.hub.start();
 
-            //Listen for the remote stream and set to video element
-            peerConnection.onaddstream = function (event) {
-                var remoteVideo = document.querySelector("video#remote-video");
-                remoteVideo.src = window.URL.createObjectURL(event.stream);
-            };
-
-
-            peerConnection.ondatachannel = function (event) {
-
-                dataChannel = event.channel;
-
-            //    dataChannel.onerror = function (error) {
-            //        console.log("Data Channel Error:", error);
-            //    };
-
-                dataChannel.onmessage = function (event) {
-                    console.log("Got Data Channel Message:", event.data);
-                    $('#log').prepend(event.data);
-                };
-
-            //    dataChannel.onopen = function () {
-            //        console.log("The Data Channel is Open");
-            //    };
-
-            //    dataChannel.onclose = function () {
-            //        console.log("The Data Channel is Closed");
-            //    };
-            };
-
-            // Listen for Offer, set remote description, create answer and broadcast
-
-            // Listen for ICE candidates
-
-            // Listen for new streams and add to the PeerCandidate
-
-
         });
-    
+
+
     </script>
 }

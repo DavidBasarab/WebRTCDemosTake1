@@ -33,10 +33,26 @@
                navigator.mozGetUserMedia ||
                navigator.msGetUserMedia);
 
-    var sdpConstraints = {
-        "offerToReceiveAudio": true,
-        "offerToReceiveVideo": true
-    };
+    //var sdpConstraints = {
+    //    'mandatory': {
+    //        "offerToReceiveAudio": true,
+    //        "offerToReceiveVideo": true
+    //    }
+        //};
+
+    var sdpConstraints;
+    if (typeof webkitRTCPeerConnection !== 'undefined') {
+        sdpConstraints = { mandatory: {} };
+        sdpConstraints.mandatory = {
+            OfferToReceiveAudio: true,
+            OfferToReceiveVideo: true
+        };
+    } else {
+        sdpConstraints = {
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true
+        };
+    }
 
     var configOptions = { optional: [ { DtlsSrtpKeyAgreement: true}]};
 
@@ -96,6 +112,7 @@
         roomHubProxy.client.onPeerConnected = function (calleeServerConnectionId) {
 
             //var peerConnection = new PeerConnection(null);
+            //var peerConnection = new PeerConnection({ "iceServers": [] });
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
             //peerConnection = new PeerConnection({
             //    iceServers: [{ url: "stun:global.stun.twilio.com:3478?transport=udp" }]
@@ -122,11 +139,12 @@
 
             callerPeerConnections[calleeServerConnectionId].createOffer(function (offer) {
 
+                var localDescription = new SessionDescription(offer);
                 callerPeerConnections[calleeServerConnectionId].setLocalDescription(
-                    offer,
+                    localDescription,
                     function () { 
                         console.log(offer); 
-                        roomHubProxy.server.makeOffer(calleeServerConnectionId, JSON.stringify(offer));
+                        roomHubProxy.server.makeOffer(calleeServerConnectionId, JSON.stringify(localDescription));
                     },
                     function (err) { console.log(err); });
                 },
@@ -179,6 +197,7 @@
 
             //var peerConnection = new PeerConnection(null);
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
+            //var peerConnection = new PeerConnection({ "iceServers": []});
             //peerConnection = new PeerConnection({
             //    iceServers: [{ url: "stun:global.stun.twilio.com:3478?transport=udp" }]
             //});
@@ -233,10 +252,11 @@
 
                         console.info("Created answer for " + callerServerConnectionId);
 
+                        var localDescription = new SessionDescription(answer);
                         calleePeerConnections[callerServerConnectionId].setLocalDescription(
-                            answer,
+                            localDescription,
                             function () {
-                                roomHubProxy.server.sendAnswer(callerServerConnectionId, JSON.stringify(answer));
+                                roomHubProxy.server.sendAnswer(callerServerConnectionId, JSON.stringify(localDescription));
                             },
                             function (err) {
                                 console.error(callerServerConnectionId);
@@ -275,7 +295,7 @@
         };
 
         //Callee found an ICE candidate and is telling the Caller
-        roomHubProxy.client.onCalleeCandidate = function (calleeServerConnectionId, candidate) {
+        roomHubProxy.client.onCalleeCandidateFound = function (calleeServerConnectionId, candidate) {
             
             console.log('ICE Candidate received from: ' + calleeServerConnectionId);
             console.log('Peer Connection: ' + callerPeerConnections[calleeServerConnectionId]);

@@ -1,0 +1,44 @@
+        //Define new PeerConnection
+        var peerConnection = new PeerConnection(null);
+
+        $(function () {
+
+            videoHubProxy = $.connection.videoHub;
+
+            // Listen for the Answer and set as remote description
+            videoHubProxy.client.onAnswer = function (answer) {
+                var remoteDesciprion = new SessionDescription(JSON.parse(answer));
+                peerConnection.setRemoteDescription(remoteDesciprion);
+            };
+
+            if (navigator.getUserMedia) {
+                navigator.getUserMedia(
+                    { audio: true, video: true },
+                    function (stream) {
+
+                        // Add Stream to Peer Connection
+                        peerConnection.addStream(stream);
+
+                        // Relay ICE candidates to the Callee
+                        peerConnection.onicecandidate = function (event) {
+                            if (event.candidate) {
+                                videoHubProxy.server.candidateFound(JSON.stringify(event.candidate));
+                            }
+                        }
+
+                        // Create Offer, set Local Description, broadcast offer to Peers
+                        peerConnection.createOffer(function (offer) {
+
+                            peerConnection.setLocalDescription(offer);
+
+                            videoHubProxy.server.makeOffer(JSON.stringify(offer));
+
+                        }, function (err) { console.log(err); });
+
+                    },
+                    function (err) { console.log(err); });
+            }
+
+            $.connection.hub.start();
+
+        });

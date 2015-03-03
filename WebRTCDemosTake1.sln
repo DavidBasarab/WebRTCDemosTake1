@@ -7,7 +7,30 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRTCDemosTake1", "WebRTCD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D60E094C-E4B1-468D-9400-5CF8116150BA}"
 	ProjectSection(SolutionItems) = preProject
-		TextFile1.txt = TextFile1.txt
+		DataSnippets.txt = DataSnippets.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Basics", "Basics", "{603BBAC6-0927-4B76-92CD-4EE36BB7CCCE}"
+	ProjectSection(SolutionItems) = preProject
+		AudioSnippets.txt = AudioSnippets.txt
+		VideoSnippets.txt = VideoSnippets.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Peers", "Peers", "{EF0D1D5E-94FF-42C9-A101-DA8E28F99E14}"
+	ProjectSection(SolutionItems) = preProject
+		CalleeJavascript.txt = CalleeJavascript.txt
+		CallerCalleeSnippets.txt = CallerCalleeSnippets.txt
+		CallerJavascript.txt = CallerJavascript.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{0D5E39B8-AC91-4A6A-91AE-821F64DF44B6}"
+	ProjectSection(SolutionItems) = preProject
+		DataSnippets.txt = DataSnippets.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StunTurn", "StunTurn", "{139749D1-D0F5-46B9-9D37-AB6AC4ED7254}"
+	ProjectSection(SolutionItems) = preProject
+		StunTurnSnippets.txt = StunTurnSnippets.txt
 	EndProjectSection
 EndProject
 Global
@@ -23,5 +46,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{603BBAC6-0927-4B76-92CD-4EE36BB7CCCE} = {D60E094C-E4B1-468D-9400-5CF8116150BA}
+		{EF0D1D5E-94FF-42C9-A101-DA8E28F99E14} = {D60E094C-E4B1-468D-9400-5CF8116150BA}
+		{0D5E39B8-AC91-4A6A-91AE-821F64DF44B6} = {D60E094C-E4B1-468D-9400-5CF8116150BA}
+		{139749D1-D0F5-46B9-9D37-AB6AC4ED7254} = {D60E094C-E4B1-468D-9400-5CF8116150BA}
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,107 @@
+/***********************************************************************************
+
+if (navigator.getUserMedia) {
+
+    navigator.getUserMedia(
+        { audio: true },
+        function (stream) {
+            var localAudio = document.querySelector("audio#local-audio");
+            localAudio.src = window.URL.createObjectURL(stream);
+        },
+        function (err) {
+            console.log(err);
+        });
+}
+
+/***********************************************************************************
+
+//Create AudioContext and get canvas context
+var audioContext = new AudioContext();
+var canvasContext = document.getElementById("meter").getContext("2d");
+
+
+//Create MediaStreamSource, meter.  Connect the two and start the draw loop
+var mediaStreamSource = audioContext.createMediaStreamSource(stream);
+meter = createAudioMeter(audioContext);
+mediaStreamSource.connect(meter);
+drawLoop();
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************************
+
+peerConnection = new PeerConnection({
+    iceServers: [{ url: "stun:global.stun.twilio.com:3478?transport=udp" }]
+});
+
+/***********************************************************************************
+
+//Get Ice Server info from Twilio
+private Token GetIceServers()
+{
+    TwilioRestClient client = new TwilioRestClient(Credentials.AccountSid, Credentials.AuthToken);
+    return client.CreateToken();
+}
+
+//Make available to view
+ViewBag.IceServers = GetIceServers().IceServers;
+
+//Give iceserver info to PeerConnection
+peerConnection = new PeerConnection({
+    iceServers: @Html.Raw(Json.Encode(ViewBag.IceServers).ToLower())
+});
+
+
+/***********************************************************************************
+
+var peerConnection = new PeerConnection([], { optional: [{ RtpDataChannels: true }] });
+var dataChannel = peerConnection.createDataChannel("chat", { reliable: false });
+
+$('#send').click(function () {
+    dataChannel.send("Hello World!");
+});
+
+/***********************************************************************************
+
+
+
+
+        private Token GetIceServers()
+        {
+            TwilioRestClient client = new TwilioRestClient(Credentials.AccountSid, Credentials.AuthToken);
+            return client.CreateToken();
+        }
+
+
+
+        ViewBag.IceServers = GetIceServers().IceServers;
+
+            //peerConnection.oniceconnectionstatechange = function(event) {
+            //    console.log(event);
+            //};
+
+            //peerConnection.onnegotiationneeded = function(event) {
+            //    console.log(event);
+            //};
+
+            //peerConnection.onpeeridentity = function(event) {
+            //    console.log(event);
+            //};
+
+            //peerConnection.onsignalingstatechange= function(event) {
+            //    console.log(event);
+            //};
+
+            //peerConnection.ondatachannel = function(event) {
+            //    console.log(event);
+            //}
+

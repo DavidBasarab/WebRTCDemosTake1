@@ -1,0 +1,13 @@
+
+ViewBag.IceServers = GetIceServers().IceServers;
+
+private Token GetIceServers()
+{
+    TwilioRestClient client = new TwilioRestClient(Credentials.AccountSid, Credentials.AuthToken);
+    return client.CreateToken();
+}
+
+/***********************************************************************************
+
+var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) });
+

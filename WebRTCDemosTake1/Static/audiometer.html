@@ -12,8 +12,6 @@
         <canvas id="meter" width="300" height="50"></canvas>
     </div>
 
-    <!-- Step 1: Add volume-meter tag -->
-
     <script src="volume-meter.js"></script>
     <script type="text/javascript" language="javascript">
     navigator.getUserMedia = (navigator.getUserMedia ||
@@ -25,10 +23,6 @@
 
         //Step 1: Create an AudioContext, our generic audio-processing graph
         //Step 2: Get canvas context
-        //Step 2: Create a new MediaStreamSource
-        //Step 3: Create a new AudioMeter
-        //Step 4: Connect the meter to the mediastreamsource
-        //Step 5: start drawLoop
 
     if (navigator.getUserMedia) {
 
@@ -38,8 +32,10 @@
                 var localAudio = document.querySelector("audio#local-audio");
                 localAudio.src = window.URL.createObjectURL(stream);
 
-                //Add audio meter
-
+                //Step 3: Create a new MediaStreamSource
+                //Step 4: Create a new AudioMeter
+                //Step 5: Connect the meter to the mediastreamsource
+                //Step 6: start drawLoop
             },
             function (err) {
                 console.log(err);

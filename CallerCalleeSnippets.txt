@@ -1,0 +1,90 @@
+//Define new PeerConnection in the Caller
+var peerConnection = new PeerConnection(null);
+
+//Add MediaStream to PeerConnection
+peerConnection.addStream(stream);
+
+//Create a new SDP Offer, set as Local Description and broadcast to available peers
+peerConnection.createOffer(function (offer) {
+    peerConnection.setLocalDescription(offer);
+    videoHubProxy.server.makeOffer(JSON.stringify(offer));
+},
+function (err) { console.log(err); });
+
+/***********************************************************************************
+
+//Relay Offers to connected clients
+public void MakeOffer(string offer)
+{
+    Clients.Others.onOffer(offer);
+}
+
+/***********************************************************************************
+
+//Create a new PeerConnection
+var peerConnection = new PeerConnection(null);
+
+//Listen for offer, set remote description
+videoHubProxy.client.onOffer = function (offer) {
+    remoteDescription = new SessionDescription(JSON.parse(offer));
+    peerConnection.setRemoteDescription(remoteDescription);
+
+    //Create SDP Answer, set local description and return to offerer
+};
+
+/***********************************************************************************
+
+//Identify ICE Candidates and broadcast to peers
+peerConnection.onicecandidate = function (event) {
+    if (event.candidate) {
+        videoHubProxy.server.candidateFound(JSON.stringify(event.candidate));
+    }
+};
+
+/***********************************************************************************
+
+//Relay ICE Candidates to connected clients
+public void CandidateFound(string candidate)
+{
+    Clients.Others.onCandidate(candidate);
+}
+
+/***********************************************************************************
+
+//Listen for new ICE candidates and add to the PeerConnection
+videoHubProxy.client.onCandidate = function (candidate) {
+    rtcCandidate = new IceCandidate(JSON.parse(candidate));
+    peerConnection.addIceCandidate(rtcCandidate);
+};
+
+/***********************************************************************************
+
+//Create answer, set as local description and send to offerer
+peerConnection.createAnswer(function (answer) {
+    peerConnection.setLocalDescription(answer);
+    videoHubProxy.server.sendAnswer(JSON.stringify(answer));
+},
+function (err) { console.log(err); });
+
+/***********************************************************************************
+
+//Relay Answers to connected clients
+public void SendAnswer(string answer)
+{
+    Clients.Others.onAnswer(answer);
+}
+
+/***********************************************************************************
+
+videoHubProxy.client.onAnswer = function (answer) {
+    var rtcAnswer = new SessionDescription(JSON.parse(answer));
+    peerConnection.setRemoteDescription(rtcAnswer);
+};
+
+/***********************************************************************************
+
+//Listen for the remote stream and set to video element
+peerConnection.onaddstream = function (event) {
+    var remoteVideo = document.querySelector("video#remote-video");
+    remoteVideo.src = window.URL.createObjectURL(event.stream);
+};
