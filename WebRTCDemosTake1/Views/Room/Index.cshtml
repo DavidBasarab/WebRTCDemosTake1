@@ -113,7 +113,7 @@
             peerConnections[calleeServerConnectionId].onicecandidate = function (event) {
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + calleeServerConnectionId);
-                    roomHubProxy.server.callerCandidateFound(calleeServerConnectionId, JSON.stringify(event.candidate));
+                    roomHubProxy.server.candidateFound(calleeServerConnectionId, JSON.stringify(event.candidate));
                 }
             };
 
@@ -192,7 +192,7 @@
             peerConnections[callerServerConnectionId].onicecandidate = function (event) {
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + callerServerConnectionId);
-                    roomHubProxy.server.calleeCandidateFound(callerServerConnectionId, JSON.stringify(event.candidate));
+                    roomHubProxy.server.candidateFound(callerServerConnectionId, JSON.stringify(event.candidate));
                 }
             };
 
@@ -261,25 +261,25 @@
         };
 
         //Caller found an ICE candidate and is telling the Callee
-        roomHubProxy.client.onCallerCandidateFound = function (callerServerConnectionId, candidate) {
+        //roomHubProxy.client.onCallerCandidateFound = function (callerServerConnectionId, candidate) {
             
-            console.log('ICE Candidate received from: ' + callerServerConnectionId);
-            console.log('Peer Connection: ' + peerConnections[callerServerConnectionId]);
+        //    console.log('ICE Candidate received from: ' + callerServerConnectionId);
+        //    console.log('Peer Connection: ' + peerConnections[callerServerConnectionId]);
 
-            rtcCandidate = new IceCandidate(JSON.parse(candidate));
+        //    rtcCandidate = new IceCandidate(JSON.parse(candidate));
 
-            peerConnections[callerServerConnectionId].addIceCandidate(
-                rtcCandidate,
-                function () {
-                    console.log(rtcCandidate);
-                },
-                function (err) {
-                    console.error(callerServerConnectionId, err);
-                });
-        };
+        //    peerConnections[callerServerConnectionId].addIceCandidate(
+        //        rtcCandidate,
+        //        function () {
+        //            console.log(rtcCandidate);
+        //        },
+        //        function (err) {
+        //            console.error(callerServerConnectionId, err);
+        //        });
+        //};
 
         //Callee found an ICE candidate and is telling the Caller
-        roomHubProxy.client.onCalleeCandidateFound = function (calleeServerConnectionId, candidate) {
+        roomHubProxy.client.onCandidateFound = function (calleeServerConnectionId, candidate) {
             
             console.log('ICE Candidate received from: ' + calleeServerConnectionId);
             console.log('Peer Connection: ' + peerConnections[calleeServerConnectionId]);

@@ -38,16 +38,16 @@ namespace WebRTCDemosTake1.Hubs
         }
 
         //Relay ICE Candidates from Caller to Callee
-        public void CallerCandidateFound(string calleeServerConnectionId, string candidate)
+        public void CandidateFound(string serverConnectionId, string candidate)
         {
-            Clients.Client(calleeServerConnectionId).onCallerCandidateFound(this.Context.ConnectionId, candidate);
+            Clients.Client(serverConnectionId).onCandidateFound(this.Context.ConnectionId, candidate);
         }
 
         //Relay ICE Candidates from Callee to Caller
-        public void CalleeCandidateFound(string callerServerConnectionId, string candidate)
-        {
-            Clients.Client(callerServerConnectionId).onCalleeCandidateFound(this.Context.ConnectionId, candidate);
-        }
+        //public void CalleeCandidateFound(string callerServerConnectionId, string candidate)
+        //{
+        //    Clients.Client(callerServerConnectionId).onCandidateFound(this.Context.ConnectionId, candidate);
+        //}
 
         //Relay Answers to connected clients
         public void SendAnswer(string callerServerConnectionId, string answer)
