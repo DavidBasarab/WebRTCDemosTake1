@@ -107,19 +107,11 @@
 
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
 
-<<<<<<< HEAD
             peerConnections[calleeServerConnectionId] = peerConnection;
             peerConnections[calleeServerConnectionId].addStream(localMediaStream);
 
             peerConnections[calleeServerConnectionId].onicecandidate = function (event) {
-=======
-            //Caller found and ICE candidate and wants to tell the Callee
-            // Should I wait to start doing this until after the RemoteDescription is set?
-            // http://stackoverflow.com/questions/13396071/errors-when-ice-candidates-are-received-before-answer-is-sent
-            callerPeerConnections[calleeServerConnectionId].onicecandidate = function (event) {
->>>>>>> ae5c2693896c04acd514f9f842a22e2f715b19bd
                 if (event.candidate) {
-                    console.log('ICE Candidate Found.  Sending to ' + calleeServerConnectionId);
                     roomHubProxy.server.candidateFound(calleeServerConnectionId, JSON.stringify(event.candidate));
                 }
             };
@@ -127,14 +119,9 @@
             peerConnections[calleeServerConnectionId].oniceconnectionstatechange = function (event) {
                 var connectionState = event.currentTarget.iceConnectionState;
                 console.log(connectionState);
-
-                if (connectionState == "disconnected") {
-                    debugger;
-                }
             };
 
             peerConnections[calleeServerConnectionId].createOffer(function (offer) {
-
                 var localDescription = new SessionDescription(offer);
                 peerConnections[calleeServerConnectionId].setLocalDescription(
                     localDescription,
@@ -146,9 +133,6 @@
                 },
                 function (err) { console.log(err); },
                 sdpConstraints);
-
-
-            console.log(calleeServerConnectionId);
         };
 
         //roomHubProxy.client.onPeerDisconnected = function (calleeServerConnectionId) {
@@ -159,9 +143,6 @@
         roomHubProxy.client.onAnswer = function (calleeServerConnectionId, answer) {
 
             peerConnections[calleeServerConnectionId].onaddstream = function (event) {
-
-                console.log("Remote Video Stream added from " + calleeServerConnectionId);
-
                 var videocontainer = $(videohtml);
                 var video = videocontainer.children("video");
 
@@ -188,32 +169,19 @@
 
         //Listen for offer, set remote description
         roomHubProxy.client.onOffer = function (callerServerConnectionId, offer) {
-
-            console.info("Offer from " + callerServerConnectionId);
-
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
 
             peerConnections[callerServerConnectionId] = peerConnection;
             peerConnections[callerServerConnectionId].addStream(localMediaStream);
 
-<<<<<<< HEAD
             peerConnections[callerServerConnectionId].onicecandidate = function (event) {
-=======
-            // Should I wait to start doing this until after the RemoteDescription is set?
-            // http://stackoverflow.com/questions/13396071/errors-when-ice-candidates-are-received-before-answer-is-sent
-            calleePeerConnections[callerServerConnectionId].onicecandidate = function (event) {
->>>>>>> ae5c2693896c04acd514f9f842a22e2f715b19bd
                 if (event.candidate) {
-                    console.log('ICE Candidate Found.  Sending to ' + callerServerConnectionId);
                     roomHubProxy.server.candidateFound(callerServerConnectionId, JSON.stringify(event.candidate));
                 }
             };
 
             //Listen for the remote stream and set to video element
             peerConnections[callerServerConnectionId].onaddstream = function (event) {
-
-                console.log("Remote Video Stream added from " + callerServerConnectionId);
-
                 var videocontainer = $(videohtml);
                 var video = videocontainer.children("video");
 
@@ -226,29 +194,14 @@
             };
 
             peerConnections[callerServerConnectionId].oniceconnectionstatechange = function (event) {
-
                 var connectionState = event.currentTarget.iceConnectionState;
                 console.log(connectionState);
-
-                if (connectionState == "disconnected") {
-                    debugger;
-                }
             };
 
-
             remoteDescription = new SessionDescription(JSON.parse(offer));
-            peerConnections[callerServerConnectionId].setRemoteDescription(
-                remoteDescription,
-
+            peerConnections[callerServerConnectionId].setRemoteDescription(remoteDescription,
                 function () { 
-
-                    console.info("Successfully set remote SDP for " + callerServerConnectionId);
-
-                    //Create answer, set as local description and send to offerer
                     peerConnections[callerServerConnectionId].createAnswer(function (answer) {
-
-                        console.info("Created answer for " + callerServerConnectionId);
-
                         var localDescription = new SessionDescription(answer);
                         peerConnections[callerServerConnectionId].setLocalDescription(
                             localDescription,
@@ -259,54 +212,21 @@
                                 console.error(callerServerConnectionId);
                                 console.error(err);
                             });
-
-                        
                     },
                     function (err) { console.log(err); });
                 },
-
                 function (err) {
                     console.log(err);
                 },
-
                 sdpConstraints);
-
         };
 
-        //Caller found an ICE candidate and is telling the Callee
-        //roomHubProxy.client.onCallerCandidateFound = function (callerServerConnectionId, candidate) {
-            
-        //    console.log('ICE Candidate received from: ' + callerServerConnectionId);
-        //    console.log('Peer Connection: ' + peerConnections[callerServerConnectionId]);
-
-        //    rtcCandidate = new IceCandidate(JSON.parse(candidate));
-
-        //    peerConnections[callerServerConnectionId].addIceCandidate(
-        //        rtcCandidate,
-        //        function () {
-        //            console.log(rtcCandidate);
-        //        },
-        //        function (err) {
-        //            console.error(callerServerConnectionId, err);
-        //        });
-        //};
-
-        //Callee found an ICE candidate and is telling the Caller
         roomHubProxy.client.onCandidateFound = function (calleeServerConnectionId, candidate) {
-            
-            console.log('ICE Candidate received from: ' + calleeServerConnectionId);
-            console.log('Peer Connection: ' + peerConnections[calleeServerConnectionId]);
-
             rtcCandidate = new IceCandidate(JSON.parse(candidate));
-
             peerConnections[calleeServerConnectionId].addIceCandidate(
                 rtcCandidate,
-                function () {
-                    console.log(rtcCandidate);
-                },
-                function (err) {
-                    console.error(calleeServerConnectionId, err);
-                });
+                function () { console.log(rtcCandidate); },
+                function (err) { console.error(calleeServerConnectionId, err); });
         };
     });
 </script>
