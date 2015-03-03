@@ -163,7 +163,6 @@
     <Content Include="Static\audiometer.html" />
     <Content Include="Static\basicaudio.html" />
     <Content Include="Static\basicvideo.html" />
-    <Content Include="Static\index.html" />
     <Content Include="Static\volume-meter.js" />
     <Content Include="Web.config" />
   </ItemGroup>

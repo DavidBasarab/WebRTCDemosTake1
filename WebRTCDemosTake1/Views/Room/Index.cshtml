@@ -6,8 +6,7 @@
 
 <div id="signalrid"></div>
 <div>
-    @*<input id="room" />*@
-    <button id="join">Join</button>
+    <button id="join" disabled>Join</button>
 </div>
 <div id="videos"></div>
 @*<div>
@@ -33,13 +32,8 @@
                navigator.mozGetUserMedia ||
                navigator.msGetUserMedia);
 
-    //var sdpConstraints = {
-    //    'mandatory': {
-    //        "offerToReceiveAudio": true,
-    //        "offerToReceiveVideo": true
-    //    }
-        //};
-
+    // Wacky constraints definition to work around 
+    // differences in support in FF vs Chrome
     var sdpConstraints;
     if (typeof webkitRTCPeerConnection !== 'undefined') {
         sdpConstraints = { mandatory: {} };
@@ -55,11 +49,6 @@
     }
 
     var configOptions = { optional: [ { DtlsSrtpKeyAgreement: true}]};
-
-    //Define new PeerConnection
-    //var peerConnection = new PeerConnection(
-    //    { iceServers: [] },
-    //    { optional: [{ RtpDataChannels: true }] });
 
     //var dataChannel = peerConnection.createDataChannel("sendDataChannel", { reliable: false });
     //dataChannel.onmessage = function (event) {
@@ -83,11 +72,16 @@
                 function (stream) {
                     localMediaStream = stream;
 
-                    //var video = $(videohtml);
-                    //video.attr('src', window.URL.createObjectURL(localMediaStream));
-                    //video.get(0).play();
+                    var videocontainer = $(videohtml);
+                    var video = videocontainer.children("video");
 
-                    //$("div#videos").append(video);
+                    video.attr('id', 'video-self');
+                    video.attr('src', window.URL.createObjectURL(localMediaStream));
+                    video.get(0).play();
+
+                    $("div#videos").append(videocontainer);
+
+                    $("#join").prop('disabled', false);
                 },
                 function (err) { console.log(err); });
         }
@@ -97,7 +91,8 @@
 
         $('#join').click(function () {
             $.connection.hub.start().done(function () {
-                $('#signalrid').html('Now connected, connection ID=' + $.connection.hub.id);
+                $('#video-self').siblings('span').html($.connection.hub.id)
+
             });
 
         });
@@ -111,16 +106,11 @@
         //A new peer has connected so try to establish peering with them
         roomHubProxy.client.onPeerConnected = function (calleeServerConnectionId) {
 
-            //var peerConnection = new PeerConnection(null);
-            //var peerConnection = new PeerConnection({ "iceServers": [] });
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
-            //peerConnection = new PeerConnection({
-            //    iceServers: [{ url: "stun:global.stun.twilio.com:3478?transport=udp" }]
-            //});
+
             callerPeerConnections[calleeServerConnectionId] = peerConnection;
             callerPeerConnections[calleeServerConnectionId].addStream(localMediaStream);
 
-            //Caller found and ICE candidate and wants to tell the Callee
             callerPeerConnections[calleeServerConnectionId].onicecandidate = function (event) {
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + calleeServerConnectionId);
@@ -195,12 +185,7 @@
 
             console.info("Offer from " + callerServerConnectionId);
 
-            //var peerConnection = new PeerConnection(null);
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
-            //var peerConnection = new PeerConnection({ "iceServers": []});
-            //peerConnection = new PeerConnection({
-            //    iceServers: [{ url: "stun:global.stun.twilio.com:3478?transport=udp" }]
-            //});
 
             calleePeerConnections[callerServerConnectionId] = peerConnection;
             calleePeerConnections[callerServerConnectionId].addStream(localMediaStream);
