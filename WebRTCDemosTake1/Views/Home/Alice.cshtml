@@ -30,6 +30,7 @@
         $(function () {
 
             videoHubProxy = $.connection.videoHub;
+            $.connection.hub.logging = true;
 
             //Step 4: Listen for new ICE candidates and add to the PeerConnection
 
