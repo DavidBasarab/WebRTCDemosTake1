@@ -9,6 +9,12 @@
     <button id="join" disabled>Join</button>
 </div>
 <div id="videos"></div>
+
+<div class="video-template">
+    <div><video autoplay controls /></div>
+    <div><span /></div>
+</div>
+
 @*<div>
     <div id="chat">
         <div id="log"></div>
@@ -21,7 +27,7 @@
 
     <script type="text/javascript">
 
-    var videohtml = '<div><video autoplay controls height="200" width"200" /><br/><span /></div>';
+        var videohtml = '<div style="float:left;"><div><video autoplay controls /></div><div style="height:27px"><span /></div></div>';
 
     var PeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
     var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
@@ -54,7 +60,20 @@
     //dataChannel.onmessage = function (event) {
     //    console.log("Got Data Channel Message:", event.data);
     //    $('#log').prepend(event.data);
-    //};
+        //};
+
+    function AddVideo(stream, id, label) {
+        var videocontainer = $('.video-template').clone();
+        var video = videocontainer.find("video");
+
+        video.attr('id', id);
+        video.attr('src', window.URL.createObjectURL(stream));
+        video.play();
+
+        videocontainer.children("span").html(label)
+        $("div#videos").append(videocontainer);
+        videocontainer.toggle();
+    }
 
     $(function () {
 
@@ -71,11 +90,11 @@
                 { audio: true, video: true },
                 function (stream) {
                     localMediaStream = stream;
-
+                    
                     var videocontainer = $(videohtml);
-                    var video = videocontainer.children("video");
+                    videocontainer.attr('id', 'video-self');
 
-                    video.attr('id', 'video-self');
+                    var video = videocontainer.find("video");
                     video.attr('src', window.URL.createObjectURL(localMediaStream));
                     video.get(0).play();
 
@@ -91,7 +110,7 @@
 
         $('#join').click(function () {
             $.connection.hub.start().done(function () {
-                $('#video-self').siblings('span').html($.connection.hub.id)
+                $('#videos span').html($.connection.hub.id)
 
             });
 
@@ -99,10 +118,8 @@
 
         var peerConnections = {};
 
-
         /******** START CALLER *********************/
 
-        //A new peer has connected so try to establish peering with them
         roomHubProxy.client.onPeerConnected = function (calleeServerConnectionId) {
 
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
@@ -126,7 +143,6 @@
                 peerConnections[calleeServerConnectionId].setLocalDescription(
                     localDescription,
                     function () { 
-                        console.log(offer); 
                         roomHubProxy.server.makeOffer(calleeServerConnectionId, JSON.stringify(localDescription));
                     },
                     function (err) { console.log(err); });
@@ -135,18 +151,18 @@
                 sdpConstraints);
         };
 
-        //roomHubProxy.client.onPeerDisconnected = function (calleeServerConnectionId) {
-        //    delete peerConnections[calleeServerConnectionId];
-        //    $('video#' + calleeServerConnectionId).remove();
-        //};
+        roomHubProxy.client.onPeerDisconnected = function (calleeServerConnectionId) {
+            delete peerConnections[calleeServerConnectionId];
+            $('#' + calleeServerConnectionId).remove();
+        };
 
         roomHubProxy.client.onAnswer = function (calleeServerConnectionId, answer) {
 
             peerConnections[calleeServerConnectionId].onaddstream = function (event) {
                 var videocontainer = $(videohtml);
-                var video = videocontainer.children("video");
+                videocontainer.attr('id', calleeServerConnectionId);
 
-                video.attr('id', calleeServerConnectionId);
+                var video = videocontainer.find("video");
                 video.attr('src', window.URL.createObjectURL(event.stream));
                 video.get(0).play();
 
@@ -157,7 +173,7 @@
             var rtcAnswer = new SessionDescription(JSON.parse(answer));
             peerConnections[calleeServerConnectionId].setRemoteDescription(
                 rtcAnswer,
-                function () { console.log(rtcAnswer); },
+                function () { },
                 function (err) { console.log(err); }
             );
 
@@ -167,7 +183,6 @@
 
         /******** START CALLEE *********************/
 
-        //Listen for offer, set remote description
         roomHubProxy.client.onOffer = function (callerServerConnectionId, offer) {
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
 
@@ -183,9 +198,9 @@
             //Listen for the remote stream and set to video element
             peerConnections[callerServerConnectionId].onaddstream = function (event) {
                 var videocontainer = $(videohtml);
-                var video = videocontainer.children("video");
+                videocontainer.attr('id', callerServerConnectionId);
 
-                video.attr('id', callerServerConnectionId);
+                var video = videocontainer.find("video");
                 video.attr('src', window.URL.createObjectURL(event.stream));
                 video.get(0).play();
 
@@ -225,7 +240,7 @@
             rtcCandidate = new IceCandidate(JSON.parse(candidate));
             peerConnections[calleeServerConnectionId].addIceCandidate(
                 rtcCandidate,
-                function () { console.log(rtcCandidate); },
+                function () { },
                 function (err) { console.error(calleeServerConnectionId, err); });
         };
     });

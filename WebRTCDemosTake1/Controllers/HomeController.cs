@@ -10,12 +10,12 @@ namespace WebRTCDemosTake1.Controllers
     public class HomeController : Controller
     {
         // GET: Home
-        public ActionResult Caller()
+        public ActionResult Bob()
         {
             return View();
         }
 
-        public ActionResult Callee()
+        public ActionResult Alice()
         {            
             return View();
         }

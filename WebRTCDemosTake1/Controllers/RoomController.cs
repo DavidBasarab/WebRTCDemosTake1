@@ -29,18 +29,7 @@ namespace WebRTCDemosTake1.Controllers
                 serializer.Serialize(writer, GetIceServers().IceServers);
             }
 
-            var json = stringwriter.ToString();
-
-
-
-
-            //string json =  JsonConvert.SerializeObject(
-            //    GetIceServers().IceServers,
-            //    Formatting.None,
-            //    new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver(), NullValueHandling = NullValueHandling.Ignore }
-            //);
-            
-            ViewBag.IceServers = json;
+            ViewBag.IceServers = stringwriter.ToString();
             return View();
         }
 
