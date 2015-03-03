@@ -97,8 +97,7 @@
 
         });
 
-        var callerPeerConnections = {};
-        var calleePeerConnections = {};
+        var peerConnections = {};
 
 
         /******** START CALLER *********************/
@@ -108,17 +107,17 @@
 
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
 
-            callerPeerConnections[calleeServerConnectionId] = peerConnection;
-            callerPeerConnections[calleeServerConnectionId].addStream(localMediaStream);
+            peerConnections[calleeServerConnectionId] = peerConnection;
+            peerConnections[calleeServerConnectionId].addStream(localMediaStream);
 
-            callerPeerConnections[calleeServerConnectionId].onicecandidate = function (event) {
+            peerConnections[calleeServerConnectionId].onicecandidate = function (event) {
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + calleeServerConnectionId);
                     roomHubProxy.server.callerCandidateFound(calleeServerConnectionId, JSON.stringify(event.candidate));
                 }
             };
 
-            callerPeerConnections[calleeServerConnectionId].oniceconnectionstatechange = function (event) {
+            peerConnections[calleeServerConnectionId].oniceconnectionstatechange = function (event) {
                 var connectionState = event.currentTarget.iceConnectionState;
                 console.log(connectionState);
 
@@ -127,10 +126,10 @@
                 }
             };
 
-            callerPeerConnections[calleeServerConnectionId].createOffer(function (offer) {
+            peerConnections[calleeServerConnectionId].createOffer(function (offer) {
 
                 var localDescription = new SessionDescription(offer);
-                callerPeerConnections[calleeServerConnectionId].setLocalDescription(
+                peerConnections[calleeServerConnectionId].setLocalDescription(
                     localDescription,
                     function () { 
                         console.log(offer); 
@@ -146,13 +145,13 @@
         };
 
         //roomHubProxy.client.onPeerDisconnected = function (calleeServerConnectionId) {
-        //    delete callerPeerConnections[calleeServerConnectionId];
+        //    delete peerConnections[calleeServerConnectionId];
         //    $('video#' + calleeServerConnectionId).remove();
         //};
 
         roomHubProxy.client.onAnswer = function (calleeServerConnectionId, answer) {
 
-            callerPeerConnections[calleeServerConnectionId].onaddstream = function (event) {
+            peerConnections[calleeServerConnectionId].onaddstream = function (event) {
 
                 console.log("Remote Video Stream added from " + calleeServerConnectionId);
 
@@ -168,7 +167,7 @@
             };
 
             var rtcAnswer = new SessionDescription(JSON.parse(answer));
-            callerPeerConnections[calleeServerConnectionId].setRemoteDescription(
+            peerConnections[calleeServerConnectionId].setRemoteDescription(
                 rtcAnswer,
                 function () { console.log(rtcAnswer); },
                 function (err) { console.log(err); }
@@ -187,10 +186,10 @@
 
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
 
-            calleePeerConnections[callerServerConnectionId] = peerConnection;
-            calleePeerConnections[callerServerConnectionId].addStream(localMediaStream);
+            peerConnections[callerServerConnectionId] = peerConnection;
+            peerConnections[callerServerConnectionId].addStream(localMediaStream);
 
-            calleePeerConnections[callerServerConnectionId].onicecandidate = function (event) {
+            peerConnections[callerServerConnectionId].onicecandidate = function (event) {
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + callerServerConnectionId);
                     roomHubProxy.server.calleeCandidateFound(callerServerConnectionId, JSON.stringify(event.candidate));
@@ -198,7 +197,7 @@
             };
 
             //Listen for the remote stream and set to video element
-            calleePeerConnections[callerServerConnectionId].onaddstream = function (event) {
+            peerConnections[callerServerConnectionId].onaddstream = function (event) {
 
                 console.log("Remote Video Stream added from " + callerServerConnectionId);
 
@@ -213,7 +212,7 @@
                 $("div#videos").append(videocontainer);
             };
 
-            calleePeerConnections[callerServerConnectionId].oniceconnectionstatechange = function (event) {
+            peerConnections[callerServerConnectionId].oniceconnectionstatechange = function (event) {
 
                 var connectionState = event.currentTarget.iceConnectionState;
                 console.log(connectionState);
@@ -225,7 +224,7 @@
 
 
             remoteDescription = new SessionDescription(JSON.parse(offer));
-            calleePeerConnections[callerServerConnectionId].setRemoteDescription(
+            peerConnections[callerServerConnectionId].setRemoteDescription(
                 remoteDescription,
 
                 function () { 
@@ -233,12 +232,12 @@
                     console.info("Successfully set remote SDP for " + callerServerConnectionId);
 
                     //Create answer, set as local description and send to offerer
-                    calleePeerConnections[callerServerConnectionId].createAnswer(function (answer) {
+                    peerConnections[callerServerConnectionId].createAnswer(function (answer) {
 
                         console.info("Created answer for " + callerServerConnectionId);
 
                         var localDescription = new SessionDescription(answer);
-                        calleePeerConnections[callerServerConnectionId].setLocalDescription(
+                        peerConnections[callerServerConnectionId].setLocalDescription(
                             localDescription,
                             function () {
                                 roomHubProxy.server.sendAnswer(callerServerConnectionId, JSON.stringify(localDescription));
@@ -265,11 +264,11 @@
         roomHubProxy.client.onCallerCandidateFound = function (callerServerConnectionId, candidate) {
             
             console.log('ICE Candidate received from: ' + callerServerConnectionId);
-            console.log('Peer Connection: ' + calleePeerConnections[callerServerConnectionId]);
+            console.log('Peer Connection: ' + peerConnections[callerServerConnectionId]);
 
             rtcCandidate = new IceCandidate(JSON.parse(candidate));
 
-            calleePeerConnections[callerServerConnectionId].addIceCandidate(
+            peerConnections[callerServerConnectionId].addIceCandidate(
                 rtcCandidate,
                 function () {
                     console.log(rtcCandidate);
@@ -283,11 +282,11 @@
         roomHubProxy.client.onCalleeCandidateFound = function (calleeServerConnectionId, candidate) {
             
             console.log('ICE Candidate received from: ' + calleeServerConnectionId);
-            console.log('Peer Connection: ' + callerPeerConnections[calleeServerConnectionId]);
+            console.log('Peer Connection: ' + peerConnections[calleeServerConnectionId]);
 
             rtcCandidate = new IceCandidate(JSON.parse(candidate));
 
-            callerPeerConnections[calleeServerConnectionId].addIceCandidate(
+            peerConnections[calleeServerConnectionId].addIceCandidate(
                 rtcCandidate,
                 function () {
                     console.log(rtcCandidate);
