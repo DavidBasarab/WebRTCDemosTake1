@@ -107,10 +107,17 @@
 
             var peerConnection = new PeerConnection({ "iceServers": @Html.Raw(ViewBag.IceServers) }, configOptions);
 
+<<<<<<< HEAD
             peerConnections[calleeServerConnectionId] = peerConnection;
             peerConnections[calleeServerConnectionId].addStream(localMediaStream);
 
             peerConnections[calleeServerConnectionId].onicecandidate = function (event) {
+=======
+            //Caller found and ICE candidate and wants to tell the Callee
+            // Should I wait to start doing this until after the RemoteDescription is set?
+            // http://stackoverflow.com/questions/13396071/errors-when-ice-candidates-are-received-before-answer-is-sent
+            callerPeerConnections[calleeServerConnectionId].onicecandidate = function (event) {
+>>>>>>> ae5c2693896c04acd514f9f842a22e2f715b19bd
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + calleeServerConnectionId);
                     roomHubProxy.server.candidateFound(calleeServerConnectionId, JSON.stringify(event.candidate));
@@ -189,7 +196,13 @@
             peerConnections[callerServerConnectionId] = peerConnection;
             peerConnections[callerServerConnectionId].addStream(localMediaStream);
 
+<<<<<<< HEAD
             peerConnections[callerServerConnectionId].onicecandidate = function (event) {
+=======
+            // Should I wait to start doing this until after the RemoteDescription is set?
+            // http://stackoverflow.com/questions/13396071/errors-when-ice-candidates-are-received-before-answer-is-sent
+            calleePeerConnections[callerServerConnectionId].onicecandidate = function (event) {
+>>>>>>> ae5c2693896c04acd514f9f842a22e2f715b19bd
                 if (event.candidate) {
                     console.log('ICE Candidate Found.  Sending to ' + callerServerConnectionId);
                     roomHubProxy.server.candidateFound(callerServerConnectionId, JSON.stringify(event.candidate));
